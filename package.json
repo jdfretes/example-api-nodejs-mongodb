@@ -1,7 +1,7 @@
 {
   "name": "tw_api",
   "version": "1.0.0",
-  "description": "jugar con twitter",
+  "description": "API ecomerce",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
