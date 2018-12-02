@@ -1,6 +1,8 @@
 'use strict'
 const app = require('express')();
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const Product = require('./models/product');
 var http = require('http').Server(app);
 var jwt = require('jsonwebtoken');
 var cors = require('cors')
@@ -22,23 +24,56 @@ app.get('/api', (req, res) => {
 });
 
 app.get('/api/product', (req, res) => {
-    res.status(200).send({ message: 'get productos' })
+    Product.find({}, (err, products) => {
+        if (err) return res.status(500).send({ message: 'Error al consultar, Disculpe los inconvenientes...' })
+        if (!products) return res.status(404).send({ message: 'No existen productos a la venta...' })
+
+        res.status(200).send({ products })
+    })
 });
 
 app.get('/api/product/:productId', (req, res) => {
-    res.status(200).send({ message: 'get producto' })
+    let productId = req.params.productId
+    Product.findById(productId, (err, product) => {
+        if (err) return res.status(500).send({ message: 'Error al consultar el producto, Disculpe los inconvenientes...' })
+        if (!product) return res.status(404).send({ message: 'El Producto no existe...' })
+
+        res.status(200).send({ product })
+    })
 });
 
 app.post('/api/product', (req, res) => {
-    res.status(200).send(req.body)
+    let product = new Product()
+    product.nombre = req.body.nombre
+    product.imagen = req.body.imagen
+    product.precio = req.body.precio
+    product.categoria = req.body.categoria
+    product.descripcion = req.body.descripcion
+
+    product.save((err, productStored) => {
+        if (err) res.status(500).send({ message: 'Error al guardar producto...' })
+        res.status(200).send({ product: productStored })
+    });
 });
 
-app.put('/api/product/productId', (req, res) => {
-    res.status(200).send({ message: 'put producto' })
+app.put('/api/product/:productId', (req, res) => {
+    let productId = req.params.productId
+    let update = req.body
+    Product.findByIdAndUpdate(productId, update, (err, productUpdated) => {
+        if (err) return res.status(500).send({ message: 'Error al actualizar el Producto...' })
+        res.status(200).send({ product: productUpdated })
+    });
 });
 
-app.delete('/api/product/productId', (req, res) => {
-    res.status(200).send({ message: 'delete producto' })
+app.delete('/api/product/:productId', (req, res) => {
+    let productId = req.params.productId
+    Product.findById(productId, (err, product) => {
+        if (err) return res.status(500).send({ message: 'Error al eliminar el Producto...' })
+        product.remove((err) => {
+            if (err) return res.status(500).send({ message: 'Error al eliminar el Producto...' })
+            res.status(200).send({ message: "El Producto a sido eliminado" })
+        })
+    })
 });
 
 
@@ -80,7 +115,15 @@ function addMsg(msg) {
     io.emit('send msg', mensajes)
 }*/
 
-//server
-http.listen(PORT, () => {
-    console.log('Corriendo en el puerto: ', PORT);
+//db connect
+mongoose.connect('mongodb://localhost:27017/shopdb', (err, res) => {
+    if (err) {
+        console.log('db status: ', err)
+    } else {
+        console.log('db status: coneccion a la base de datos establecida...')
+        //server
+        http.listen(PORT, () => {
+            console.log('API Corriendo en el puerto: ', PORT);
+        });
+    }
 });
