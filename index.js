@@ -1,35 +1,16 @@
-var app = require('express')();
-var http = require('http').Server(app);
-var cors = require('cors')
-var io = require('socket.io')(http);
-app.use(cors())
-var mensajes = []
-
-app.get('/', function (req, res) {
-    res.send('<h1>twApi</h1>');
-});
-
-io.on('connection', function (socket) {
-    socket.on('user new', function (msg) {
-        let customMsg = {
-            user: msg,
-            msg: 'Hola me conecte...'
-        }
-        console.log(customMsg.user + ' se conecto');
-        addMsg(customMsg)
-    });
-
-    socket.on('chat message', function (msg) {
-        addMsg(msg)
-    });
-});
-
-function addMsg(msg) {
-    mensajes.push(msg)
-    io.emit('send msg', mensajes)
-}
-
-
-http.listen(3000, function () {
-    console.log('listening on *:3000');
+'use strict'
+const app = require('./app');
+const mongoose = require('mongoose');
+const config = require('./config')
+//db connect & server
+mongoose.connect(config.db, (err, res) => {
+    if (err) {
+        console.log('db status: ', err)
+    } else {
+        console.log('db status: coneccion a la base de datos establecida...')
+        //server
+        app.listen(config.port, () => {
+            console.log('API Corriendo en el puerto:', config.port);
+        });
+    }
 });
