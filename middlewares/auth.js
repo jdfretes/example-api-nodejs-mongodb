@@ -9,7 +9,6 @@ function isAuth(req, res, next) {
     
     services.decodeToken(token).then(response => {
         req.user = response
-        console.log(response)
         next()
     }).catch(response => {
         res.status(response.status).send({message: response.message})
