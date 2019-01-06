@@ -43,6 +43,7 @@ function signIn(req, res) {
         if (!passwordIsValid) return res.status(401).send({ auth: false, token: null, message: 'Contrasenha invalida' });
         //si pass es valido damos aceso y un nuevo token
         res.status(200).send({
+            status: 200,
             message: 'Te has logueado correctamente...',
             token: service.createToken(user),
             auth: passwordIsValid
