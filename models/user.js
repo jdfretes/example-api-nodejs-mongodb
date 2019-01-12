@@ -1,7 +1,7 @@
 'use strict'
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema
-const bcrypt = require('bcrypt-nodejs');
+const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
 const UserSchema = Schema({
@@ -15,9 +15,9 @@ const UserSchema = Schema({
 
 UserSchema.pre('save', function (next) {
     //if (!this.isModified('password')) return next()
-    bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.genSalt(15, (err, salt) => {
         if (err) return next(err)
-        bcrypt.hash(this.password, salt, null, (err, hash) => {
+        bcrypt.hash(this.password, salt, (err, hash) => {
             if (err) return next(err)
             this.password = hash
             next()
